@@ -83,7 +83,6 @@ model <- lm(Grade_Final ~ ., data)
 summary(model)
 
 model <- lm(Grade_Final ~ Grade_Test1 + Grade_H1 + Grade_H2 + Grade_H3 + Grade_H4, data)
-model$
 summary(model)
 
 library(Hmisc)
@@ -112,3 +111,4 @@ mean(abs(cv$Grade_Final - cv$cvpred))
 sqrt(mean((cv$Grade_Final - cv$cvpred)^2))
 # RMSE for the non-cross-validated model
 sqrt(mean((cv$Grade_Final - cv$Predicted)^2))
+
