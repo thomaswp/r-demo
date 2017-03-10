@@ -1,3 +1,7 @@
+# Download: go.ncsu.edu/sigcse-r
+
+# install needed packages ahead of time
+install.packages("plyr", "ggplot2", "Hmisc", "corrplot", "DAAG")
 
 # load the data
 data <- read.csv("data.csv")
@@ -40,6 +44,7 @@ data$goodGrade <- data$Grade_Final >= 80
 # the plyr library helps you summarize and aggregate data
 library(plyr)
 
+?ddply
 # summarize every column of our dataset
 ddply(data, c(), colwise(mean))
 # summarze specific columns (test grades), but split data based on the "goodGrade" column value
@@ -72,10 +77,38 @@ ggplot(splitGrades) + geom_bar(aes(x=goodGrade, y=meanTest1), stat="identity")
 
 
 # remove our "good grade" column, since this would be cheating
-data <- data[,-16]
+data <- read.csv("data.csv")
 # create a linear model to predict final grade
 model <- lm(Grade_Final ~ ., data)
 summary(model)
 
 model <- lm(Grade_Final ~ Grade_Test1 + Grade_H1 + Grade_H2 + Grade_H3 + Grade_H4, data)
+model$
 summary(model)
+
+library(Hmisc)
+# Create a correlation matrix of the data, selecting only the 
+# columns that we used in our model (1 through 5 and 12)
+corrMatrix <- rcorr(as.matrix(data[,c(1:5, 12)]))
+corrMatrix$r
+corrMatrix$P
+
+library(corrplot)
+# Plot the correlation matrix
+corrplot(corrMatrix$r)
+
+library(DAAG)
+# cross-validate the linear model with 3 folds
+cv <- cv.lm(data, Grade_Final ~ Grade_Test1 + Grade_H1 + Grade_H2 + Grade_H3 + Grade_H4, 3)
+# plot the same chart using R
+plot(cv$cvpred, cv$Grade_Final)
+# get a histogram of the error of the model
+hist(cv$Grade_Final - cv$cvpred)
+# get a histogram of the absolute error
+hist(abs(cv$Grade_Final - cv$cvpred))
+# mean absolute error
+mean(abs(cv$Grade_Final - cv$cvpred))
+# Root Mean-Squared Error (RMSE)
+sqrt(mean((cv$Grade_Final - cv$cvpred)^2))
+# RMSE for the non-cross-validated model
+sqrt(mean((cv$Grade_Final - cv$Predicted)^2))
