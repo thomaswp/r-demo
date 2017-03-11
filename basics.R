@@ -1,7 +1,7 @@
 # Download: go.ncsu.edu/sigcse-r
 
 # install needed packages ahead of time
-install.packages("plyr", "ggplot2", "Hmisc", "corrplot", "DAAG")
+install.packages(c("plyr", "ggplot2", "Hmisc", "corrplot", "DAAG"))
 
 # load the data
 data <- read.csv("data.csv")
