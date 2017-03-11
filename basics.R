@@ -4,7 +4,10 @@
 install.packages(c("plyr", "ggplot2", "Hmisc", "corrplot", "DAAG"))
 
 # load the data
+# Tip: Press Ctrl+Enter on a line of code to execute it
 data <- read.csv("data.csv")
+
+# Tip: Open the "data" dataframe in the top-left "Environment" pane
 
 # read the column names
 names(data)
@@ -13,6 +16,8 @@ names(data)
 data$Grade_Final
 # plot it as a histogram
 hist(data$Grade_Final)
+# alternately plot a density plot to get a smooth curve
+plot(density(data$Grade_Final))
 
 # get another column
 data$Grade_Test1
