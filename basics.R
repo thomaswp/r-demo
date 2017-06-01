@@ -1,5 +1,7 @@
 # Download: go.ncsu.edu/sigcse-r
 
+## Data Basics ##
+
 # install needed packages ahead of time
 install.packages(c("plyr", "ggplot2", "Hmisc", "corrplot", "DAAG"))
 
@@ -46,6 +48,8 @@ hist(lowFinalGrade$Grade_H1)
 # add new columns to a dataset
 data$goodGrade <- data$Grade_Final >= 80
 
+## Summary and Aggregation ##
+
 # the plyr library helps you summarize and aggregate data
 library(plyr)
 
@@ -54,6 +58,8 @@ library(plyr)
 ddply(data, c(), colwise(mean))
 # summarze specific columns (test grades), but split data based on the "goodGrade" column value
 splitGrades <- ddply(data, "goodGrade", summarize, meanTest1=mean(Grade_Test1), meanTest2=mean(Grade_Test2), meanTest3=mean(Grade_Test3))
+
+## Plotting Data ##
 
 # wonderful library for all sorts of graphs and charts
 # this could use a tutorial of its own
@@ -80,6 +86,7 @@ ggplot(data, aes(x=goodGrade, y=Grade_Test1)) + geom_violin() + geom_boxplot(wid
 ggplot(splitGrades) + geom_bar(aes(x=goodGrade, y=meanTest1), stat="identity")
 
 
+## Modeling data ##
 
 # remove our "good grade" column, since this would be cheating
 data <- read.csv("data.csv")
