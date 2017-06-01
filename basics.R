@@ -74,7 +74,7 @@ ggplot(data, aes(x=goodGrade, y=Grade_Test1)) + geom_boxplot()
 # a violin plot is like a boxplot, but gives a distribution instead
 ggplot(data, aes(x=goodGrade, y=Grade_Test1)) + geom_violin()
 # we can compose plots with the + operator
-ggplot(data, aes(x=goodGrade, y=Grade_Test1)) + geom_violin() + geom_boxplot(width=0.1)
+ggplot(data, aes(x=goodGrade, y=Grade_Test1)) + geom_violin() + geom_boxplot(width=0.05)
 
 # plot our splitGrades as a bar chart
 ggplot(splitGrades) + geom_bar(aes(x=goodGrade, y=meanTest1), stat="identity")
