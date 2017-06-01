@@ -31,4 +31,7 @@ summary(model)
 plot(model$model$value ~ model$fitted.values)
 
 
-
+# Hint: you can add columns to your dataframe if you want to use them in your model:
+data$test <- data$a + data$b
+model <- lm(value ~ test + c + d, data)
+summary(model)
