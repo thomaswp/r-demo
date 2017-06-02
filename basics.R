@@ -18,6 +18,8 @@ names(data)
 data$Grade_Final
 # plot it as a histogram
 hist(data$Grade_Final)
+# Figure out what "hist()" does
+?hist
 # alternately plot a density plot to get a smooth curve
 plot(density(data$Grade_Final))
 
@@ -26,19 +28,32 @@ data$Grade_Test1
 # plot two columns in a scatter plot
 plot(data$Grade_Test1, data$Grade_Final)
 # add a bit of jitter to make it easier to read
+data$Grade_Test1
+jitter(data$Grade_Test1, 5)
+# What do you think jitter will do?
 plot(jitter(data$Grade_Test1, 5), data$Grade_Final)
-
-# you can apply element-wise operation over a vector
-data$Grade_Final < 60
-# then you can aggregate the results (TRUE = 1)
-sum(data$Grade_Final < 60)
-mean(data$Grade_Final < 60)
+# Get the Pearson correlation between the two values
+cor(data$Grade_Test1, data$Grade_Final)
 
 # you can subset data with brackets
 # the first index is for row-subsetting
 firstFifty <- data[1:50,]
 # the second column is for column subsetting
 twoColumns <- data[,c("Grade_Final", "Grade_Test1")]
+
+# How many failing students do I have? (the boring way...)
+failing <- 0
+for (i in 1:nrow(data)) {
+  if (data[i, "Grade_Final"] < 60) failing <- failing + 1
+}
+failing
+
+# How many failing students do I have? (the R way)
+# you can apply element-wise operation over a vector
+data$Grade_Final < 60
+# then you can aggregate the results (TRUE = 1)
+sum(data$Grade_Final < 60)
+mean(data$Grade_Final < 60)
 
 # most importantly, you can subset using a boolean vector
 lowFinalGrade <- data[data$Grade_Final < 60,]
@@ -57,7 +72,10 @@ library(plyr)
 # summarize every column of our dataset
 ddply(data, c(), colwise(mean))
 # summarze specific columns (test grades), but split data based on the "goodGrade" column value
-splitGrades <- ddply(data, "goodGrade", summarize, meanTest1=mean(Grade_Test1), meanTest2=mean(Grade_Test2), meanTest3=mean(Grade_Test3))
+splitGrades <- ddply(data, "goodGrade", summarize, 
+                     meanTest1=mean(Grade_Test1), 
+                     meanTest2=mean(Grade_Test2), 
+                     meanTest3=mean(Grade_Test3))
 
 ## Plotting Data ##
 
@@ -99,7 +117,26 @@ table(data$goodGrade, data$hints)
 # We can investigate the difference visually.
 ggplot(data, aes(x=hints, y=Grade_Final)) + geom_boxplot()
 
+# Get out two subsets
+haveHints <- data[data$hints,]
+noHints <- data[!data$hints,]
+
+# One has a higher average grade - so is it better?
+mean(haveHints$Grade_Final)
+mean(noHints$Grade_Final)
+
+# Median tells a different story
+median(haveHints$Grade_Final)
+median(noHints$Grade_Final)
+# Remember the boxplots
+
+
 # But to really know, we need to do a stistical test.
+
+# Here's a t-test, which most people will use
+# It tests the null hypothesis: the means of the two populations are the same
+t.test(haveHints$Grade_Final, noHints$Grade_Final)
+
 # To see what test is most appropriate for your data,
 # you can use this chart: stats-test-chart.jpg
 
@@ -127,13 +164,10 @@ shapiro.test(data$Grade_Final)
 # These are appropriate for normal and non-normal data, but may have less power.
 # The Mann-Whitney U-test is our best bet here:
 
-# Get out two subsets
-haveHints <- data[data$hints,]
-noHints <- data[!data$hints,]
-
 # This performs the actual test
 wilcox.test(haveHints$Grade_Final, noHints$Grade_Final)
 # The p-value is > 0.05, so we cannot reject the null hypothesis
+# Does this mean hints didn't matter?
 
 # The normality question is important because if we had done a t-test...
 t.test(haveHints$Grade_Final, noHints$Grade_Final)
@@ -165,7 +199,7 @@ fisher.test(data$goodGrade, data$hints)
 
 # Get a subset of every other element
 sample <- data[seq(1, nrow(data), 2),]
-t.test(sample$goodGrade, sample$hints)
+fisher.test(sample$goodGrade, sample$hints)
 # What about every 4th?
 sample <- data[seq(1, nrow(data), 4),]
 fisher.test(sample$goodGrade, sample$hints)
