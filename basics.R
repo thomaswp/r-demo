@@ -222,6 +222,22 @@ summary(model)
 model <- lm(Grade_Final ~ Grade_Test1 + Grade_H1 + Grade_H2 + Grade_H3 + Grade_H4, data)
 summary(model)
 
+# Not every relationship is linear, so be careful with a linear model
+
+# x is an exponential distribution
+# This is a common distribution to see for time data
+x <- rexp(100, 6)
+hist(x)
+# y is related to the log of x (plus some noise)
+y <- log(x) + runif(100, 0, 1)
+hist(y)
+# This is not a linear relationsip!
+plot(x, y)
+cor(x, y)
+# One model is better than the other
+summary(lm(y ~ x))
+summary(lm(y ~ log(x)))
+
 library(Hmisc)
 # Create a correlation matrix of the data, selecting only the 
 # columns that we used in our model (1 through 5 and 12)
