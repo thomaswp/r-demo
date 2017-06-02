@@ -85,6 +85,97 @@ ggplot(data, aes(x=goodGrade, y=Grade_Test1)) + geom_violin() + geom_boxplot(wid
 # plot our splitGrades as a bar chart
 ggplot(splitGrades) + geom_bar(aes(x=goodGrade, y=meanTest1), stat="identity")
 
+## Statistical testing ##
+
+# Let's some students got an intervention: hints on their homework assignments
+
+# display counts of the different values for "hitns"
+table(data$hints)
+
+# display a 2x2 table relating hints and good grades
+table(data$goodGrade, data$hints)
+# looks like there's a relationship
+
+# We can investigate the difference visually.
+ggplot(data, aes(x=hints, y=Grade_Final)) + geom_boxplot()
+
+# But to really know, we need to do a stistical test.
+# To see what test is most appropriate for your data,
+# you can use this chart: stats-test-chart.jpg
+
+# One important question is whether our response data is normally distributed.
+# You can investigate that a few ways, but the simplest is a histogram.
+
+hist(data$Grade_Final)
+
+# To compare that to a real normal distribution, we can generate one:
+# This one will have 100 samples with population mean of 0 and SD of 1
+hist(rnorm(100, 0, 1))
+
+# There's also the qqnorm function to give you an idea of how normal the quartiles are
+qqnorm(data$Grade_Final)
+# Compare that plot to a normal distribution
+qqnorm(rnorm(100, 0, 1))
+
+# We can also test for normality
+shapiro.test(data$Grade_Final)
+# A p-value < 0.05 here means not normal, but be careful
+# since this test is very sensitive to outliers
+
+
+# Since out data looks non-normal, we should probably use a non-parametric test.
+# These are appropriate for normal and non-normal data, but may have less power.
+# The Mann-Whitney U-test is our best bet here:
+
+# Get out two subsets
+haveHints <- data[data$hints,]
+noHints <- data[!data$hints,]
+
+# This performs the actual test
+wilcox.test(haveHints$Grade_Final, noHints$Grade_Final)
+# The p-value is > 0.05, so we cannot reject the null hypothesis
+
+# The normality question is important because if we had done a t-test...
+t.test(haveHints$Grade_Final, noHints$Grade_Final)
+# we would have gotten a significant result
+
+# So why the different results?
+
+# Hope is not lost, though! Maybe hints affected the assignments themselves
+wilcox.test(haveHints$Grade_H1, noHints$Grade_H1)
+wilcox.test(haveHints$Grade_H2, noHints$Grade_H2)
+wilcox.test(haveHints$Grade_H3, noHints$Grade_H3)
+wilcox.test(haveHints$Grade_Test1, noHints$Grade_Test1)
+wilcox.test(haveHints$Grade_Test2, noHints$Grade_Test2)
+# We found some! But be careful with too many tests...
+# https://xkcd.com/882/
+
+# Still, there are other ways of looking at the question:
+# Remember out table:
+table(data$goodGrade, data$hints)
+
+# We can also test to see if the ratio of good/bad grades is
+# different in our two conditions
+fisher.test(data$goodGrade, data$hints)
+
+# And it is. So what does it tell us that one test was significant
+# but not another? Be careful with this question.
+
+# What would happen if we had half as much data?
+
+# Get a subset of every other element
+sample <- data[seq(1, nrow(data), 2),]
+t.test(sample$goodGrade, sample$hints)
+# What about every 4th?
+sample <- data[seq(1, nrow(data), 4),]
+fisher.test(sample$goodGrade, sample$hints)
+# 6th?
+sample <- data[seq(1, nrow(data), 6),]
+fisher.test(sample$goodGrade, sample$hints)
+
+# So how much data do we need to acheive significance?
+# Try G*Power: http://www.gpower.hhu.de/en.html
+
 
 ## Modeling data ##
 
