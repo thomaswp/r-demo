@@ -1,10 +1,13 @@
-# Download: go.ncsu.edu/sigcse-r
+# Download: go.ncsu.edu/reu-r-demo
 
-## 1. Loading and Viewing Data ##
 
 # Install needed packages ahead of time
 if (!require("pacman")) install.packages("pacman")
-pacman::p_load(plyr, ggplot2, Hmisc, corrplot, DAAG, reshape2)
+pacman::p_load(plyr, ggplot2, reshape2)
+
+
+
+## 1. Loading and Viewing Data ##
 
 # Load the grades
 # Tip: Press Ctrl+Enter on a line of code to execute it
@@ -47,6 +50,10 @@ cor(grades$Grade_Test1, grades$Grade_Final)
 
 
 
+
+
+
+
 ## 2. Variables and Vectors in R ##
 
 # Variables assignment in R uses "<-", and variables don't need to be declared
@@ -84,6 +91,10 @@ c(1:3, 8, 9, 10:12)
 
 ### CHALLENGE: What is the sum of all odd numbers between 1 and 500 inclusive?
 ### BONUS: Can you do it using seq() and without using seq()?
+
+
+
+
 
 
 
@@ -155,7 +166,10 @@ table(round(grades$Grade_H1))
 
 
 
-## 4. Plotting Data ##
+
+
+
+## 4. Plotting Data##
 
 # wonderful library for all sorts of graphs and charts
 # this could use a tutorial of its own
@@ -198,7 +212,17 @@ table(grades$finalPerformance)
 # Now plot students'H1W scores, split by finalPerformance
 
 
-## 5. Transforming and Sampling Data
+
+
+##########
+# Break! #
+##########
+
+
+
+
+
+## 5. Transforming and Sampling Data (if time permits) ##
 
 # Let's plot student homework grades over time.
 # First, get subset the data to get only the homeworks:
@@ -214,7 +238,7 @@ head(homeworks)
 # The reshape2 library is great for transforming data
 library(reshape2)
 
-meltedHomeworks <- melt(homeworks, id="StudentID", variable_name="homework")
+meltedHomeworks <- melt(homeworks, id="StudentID", variable.name="homework")
 # View the new meltedHomeworks dataframe in the Environment tab
 head(meltedHomeworks)
 # There's one row for every homework grade. This is perfect for ggplot:
@@ -242,30 +266,46 @@ ids <- sample(homeworks$StudentID, 10)
 sampledHomeworks <- meltedHomeworks[meltedHomeworks$StudentID %in% ids,]
 ggplot(sampledHomeworks, aes(x=homework, y=value, group=StudentID, color=StudentID)) + geom_line()
 
-
-## 6. Summarizing Data
-
-# Viewing individual students is great, but sometimes you want to aggregate them
+# It might make more sense to average the grades over homeworks
+# We can do that very easily with the plry package
 library(plyr)
+# ddply is good at aggregating data and summarizing it. This call groups the rows in
+# meltedHomeworks by their "homework" value, then calculates the mean grade for each group
+meanGrades <- ddply(meltedHomeworks, "homework", summarise, meanGrade=mean(value))
+meanGrades
+# Now we can plot the mean grades
+ggplot(meanGrades, aes(x=homework, y=meanGrade, group=1)) + geom_line()
+# You may want to set the y-axis to go between 0 and 100
+ggplot(meanGrades, aes(x=homework, y=meanGrade, group=1)) + geom_line() + 
+  scale_y_continuous(limits=c(0, 100))
 
-?ddply
-# summarize every column of our dataframe
-ddply(grades, c(), colwise(mean))
-# summarze specific columns (test grades), but split data based on the "goodGrade" column value
-splitGrades <- ddply(grades, "goodGrade", summarize, 
-                     meanTest1=mean(Grade_Test1), 
-                     meanTest2=mean(Grade_Test2), 
-                     meanTest3=mean(Grade_Test3))
-
-# plot our splitGrades as a bar chart
-ggplot(splitGrades) + geom_bar(aes(x=goodGrade, y=meanTest1), stat="identity")
+# We can even add standard error of the mean by defining a function for it...
+se <- function(x) sd(x) / sqrt(length(x))
+# ...and adding a new column for it at the end of the ddply call
+meanGrades <- ddply(meltedHomeworks, "homework", summarise, meanGrade=mean(value), seGrade=se(value))
+meanGrades
+# You can plot error bars with geom_errorbar
+ggplot(meanGrades, aes(x=homework, y=meanGrade, group=1)) + geom_line() +
+  scale_y_continuous(limits=c(0, 100)) +
+  geom_errorbar(aes(ymin=meanGrade-seGrade, ymax=meanGrade+seGrade), width=0.2)
 
 
+### CHALLENGE: Use melt, ddply and ggplot to plot the average grades 
+###            for the three tests as a bar chart
+### HINT: Use geom_barchart() to draw a bar chart
+### BONUS: Add standard error bars
 
 
-## Statistical testing ##
 
-# Let's some students got an intervention: hints on their homework assignments
+
+## 6. Statistical testing ##
+
+# Let's say some students got an intervention: hints on their homework assignments
+
+# First, let's reload the dataset, in case we've accidentally modified it so far
+grades <- read.csv("data.csv")
+# Recreate our "good grade" column
+grades$goodGrade <- grades$Grade_Final >= 80
 
 # display counts of the different values for "hitns"
 table(grades$hints)
@@ -276,6 +316,7 @@ table(grades$goodGrade, grades$hints)
 
 # We can investigate the difference visually.
 ggplot(grades, aes(x=hints, y=Grade_Final)) + geom_boxplot()
+# It's difficult to tell for sure...
 
 # Get out two subsets
 haveHints <- grades[grades$hints,]
@@ -309,6 +350,20 @@ hist(grades$Grade_Final)
 # This one will have 100 samples with population mean of 0 and SD of 1
 hist(rnorm(100, 0, 1))
 
+# Try running it a few more times to see different distributions
+hist(rnorm(100, 0, 1))
+hist(rnorm(100, 0, 1))
+
+# It also matters how many bins or "breaks" your histogram has
+hist(rnorm(100, 0, 1), breaks = 50)
+hist(rnorm(100, 0, 1), breaks = 50)
+
+# With more samples, we can see clear bell curve shape
+hist(rnorm(1000, 0, 1), breaks = 50)
+hist(rnorm(10000, 0, 1), breaks = 50)
+# This illustrates a key difference between a sample a population:
+# It can be difficult to know a population's distribution from that of a sample
+
 # There's also the qqnorm function to give you an idea of how normal the quartiles are
 qqnorm(grades$Grade_Final)
 # Compare that plot to a normal distribution
@@ -318,7 +373,6 @@ qqnorm(rnorm(100, 0, 1))
 shapiro.test(grades$Grade_Final)
 # A p-value < 0.05 here means not normal, but be careful
 # since this test is very sensitive to outliers
-
 
 # Since our data looks non-normal, we should probably use a non-parametric test.
 # These are appropriate for normal and non-normal data, but may have less power.
@@ -333,7 +387,9 @@ wilcox.test(haveHints$Grade_Final, noHints$Grade_Final)
 t.test(haveHints$Grade_Final, noHints$Grade_Final)
 # we would have gotten a significant result
 
-# So why the different results?
+# Why the different results?
+# So is it partially significant?
+# No! Significance is present or not at a given threshold (e.g. 0.05).
 
 # Hope is not lost, though! Maybe hints affected the assignments themselves
 wilcox.test(haveHints$Grade_H1, noHints$Grade_H1)
@@ -370,11 +426,27 @@ fisher.test(sample$goodGrade, sample$hints)
 # So how much data do we need to acheive significance?
 # Try G*Power: http://www.gpower.hhu.de/en.html
 
+### CHALLENGE: Test the following hypothesis:
+###            Students who do well on the first homework (grade >= 80) have a higher
+###            Test1 grade than those who do not it.
+### BONUS: A research concludes from this test that HW1 teaches critical lessons
+###        that are needed to do well on Test1. Is this conclusion supported by
+###        the data?
 
-## Modeling data ##
+
+
+
+
+
+## 7. Modeling data (if there permits) ##
+
+# Install some additional packages
+pacman::p_load(Hmisc, corrplot, DAAG)
 
 # remove our "good grade" column, since this would be cheating
 grades <- read.csv("data.csv")
+# also remove out StudentID column
+grades <- grades[,-1]
 # create a linear model to predict final grade
 model <- lm(Grade_Final ~ ., grades)
 summary(model)
@@ -401,7 +473,7 @@ summary(lm(y ~ log(x)))
 library(Hmisc)
 # Create a correlation matrix of the data, selecting only the 
 # columns that we used in our model (1 through 5 and 12)
-corrMatrix <- rcorr(as.matrix(grades[,c(1:5, 12)]))
+corrMatrix <- rcorr(as.matrix(grades[,c(2:6, 13)]))
 corrMatrix$r
 corrMatrix$P
 
