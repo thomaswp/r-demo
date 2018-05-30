@@ -25,11 +25,10 @@ tail(grades, 2)
 # Get a single column
 grades$Grade_Final
 # Plot it as a histogram
+# This shows you the distribution of final grades
 hist(grades$Grade_Final)
 # Figure out what "hist()" does
 ?hist
-# Alternately plot a density plot to get a smooth curve
-plot(density(grades$Grade_Final))
 
 # Get another column
 grades$Grade_Test1
@@ -41,12 +40,14 @@ jitter(grades$Grade_Test1, 5)
 # What do you think jitter will do?
 plot(jitter(grades$Grade_Test1, 5), grades$Grade_Final)
 # Get the Pearson correlation between the two values
+# This tells you whether there's a linear relationship between the two
+# columns. Test 1 grades are related to final grades (no surprise there!).
 cor(grades$Grade_Test1, grades$Grade_Final)
 
-### CHALLENGE: Using scatter plots, guess which grade has the 
-###            strongest correlation with a student's final grade.
-### BONUS: Use the cor() function to verify your guess. Was it right? 
-###        What happens if you run "cor(grades)"?
+### CHALLENGE: Using scatter plots, guess which of these grades has the
+###            strongest correlation with a student's final grade:
+###            Grade_H1, Grade_H6, Grade_PreCourse, Grade_Test2
+### BONUS: Use the cor() function to verify your guess. Was it right?
 
 
 
@@ -58,19 +59,24 @@ cor(grades$Grade_Test1, grades$Grade_Final)
 
 # Variables assignment in R uses "<-", and variables don't need to be declared
 x <- 3
+x
 # A "Vector" is a sequence of data with the same type. Create one with c()
 x <- c(1, 2, 3)
+x
 # We can also create a range of values with ":"
 1:5
-# Or using the "seq" function (notice that R uses )
+# Or using the "seq" function (notice that R can use "argumane=value" syntax)
 seq(from = 1, to = 10, by = 2)
+# Remember: You can figure out what arguments a function takes with "?"
+?seq
 # R can apply operations over vectors
 x * 2
 # We can also easily apply functions to vectors
 sum(x)
 mean(x)
 max(x)
-# The dataframe columns that you retrieve with $ are also usually vectors
+# The dataframe columns that you retrieve with $ are also usually vectors,
+# so we can easily calculate the average final grade of students:
 mean(grades$Grade_Final)
 # You can also add and subtract vectors in a pairwise way:
 c(1, 2, 3) + c(6, 4, 2)
@@ -80,14 +86,14 @@ c(1, 2, 3) < c(6, 4, 2)
 c(1, 2, 3, 2, 5) == 2
 # The result of a conparison is a boolean vectors
 # These have their own operators, "&" (AND), "|" (OR):
-x > 1
-x < 3
-x > 1 & x < 3
-x > 1 | x < 3
+x > 1             # which values are greater than 1
+x < 3             # which values are less than 3
+(x > 1) & (x < 3) # which are both > 1 and < 3
+(x > 1) | (x < 3) # which are either > 1 or < 3
 # Vectors are always one-dimensional, so combining them will result in a new vector
 c(x, 4)
 # This is handy for specifying non-uniform ranges:
-c(1:3, 8, 9, 10:12)
+c(1:3, 8, 9, 1:6)
 
 ### CHALLENGE: What is the sum of all odd numbers between 1 and 500 inclusive?
 ### BONUS: Can you do it using seq() and without using seq()?
@@ -100,17 +106,36 @@ c(1:3, 8, 9, 10:12)
 
 ## 3. Subsetting data ##
 
-# You can subset data with brackets
-# The first index is for row-subsetting
-firstFifty <- grades[1:50,] 
-# Now view firstFifty in the Environment tab
+# You can subset a vector with brackets []:
+x <- c(1, 2, 3, 2, 1)
+x[1]
+# You can specify a range of indices:
+x[1:3]
+# Or get the 1st, 3rd and 5th values:
+x[c(1, 3, 5)]
 
-# The second index is for column-subsetting
-twoColumns <- grades[,c("Grade_Final", "Grade_Test1")]
+# Subsetting dataframes requires two indices, but one index can be blank.
+# The value before the comma is for selecting a subset of rows
+grades[1, ]
+# You can also specify a range:
+firstFifty <- grades[1:50, ]
+# Now view firstFifty in the Environment tab
+tail(firstFifty)
+
+# The value after the comma is for selecting a subset of columns:
+twoColumns <- grades[, c("Grade_Final", "Grade_Test1")]
 head(twoColumns)
 # You can also get columns by their index:
 twoColumns <- grades[,1:2]
 head(twoColumns)
+
+# If you're feeling ambitious, select both rows and columsn:
+grades[1:3, c("Grade_Final", "Grade_Test1")]
+# The result of a subset is still a dataframe, so you can get its columns with "$"
+# This gets the first three values of Grade_H1:
+grades[1:3, ]$Grade_H1
+# And this does the same thing (remember $ get a column vector):
+grades$Grade_H1[1:3]
 
 # you can use any vector of indices to subset a dataframe:
 grades[c(1, 3, 5:7),]
@@ -118,6 +143,11 @@ grades[c(1, 3, 5:7),]
 # negative indices give you all rows except the given values.
 # omit the first 2 rows:
 grades[c(-1, -2),]
+
+### CHALLENGE: What is the average final grade for the first half of the class?
+### HINT: Use the nrow() function to get the total number of rows in a dataframe.
+### BONUS: What is the average homework grade for the student with ID S6?
+
 
 # Question: How many failing students do I have? 
 # This is the boring way to calculate it...
@@ -134,10 +164,13 @@ grades$Grade_Final < 60
 
 # Then you can aggregate the results (TRUE = 1)
 sum(grades$Grade_Final < 60)
+# Or "average" the TRUE/FALSE values to get the proportion of TRUEs
 mean(grades$Grade_Final < 60)
 
 # Most importantly, you can subset using a boolean vector
 lowFinalGrade <- grades[grades$Grade_Final < 60,]
+# Inspect lowFinalGrade. What values does it hold?
+
 # Plot the HW1 grades of students who failed the class
 hist(lowFinalGrade$Grade_H1)
 
@@ -190,27 +223,32 @@ ggplot(grades, aes(x=goodGrade, y=Grade_Test1)) + geom_violin()
 ggplot(grades, aes(x=goodGrade, y=Grade_Test1)) + geom_violin() + geom_boxplot(width=0.05)
 
 # Question: Does posting on the Piazza forum predict a student's final grade?
+# Let's try comparing the posts of high- and low-performing students:
+ggplot(grades, aes(x=goodGrade, y=PiazzaPostTotal)) + geom_boxplot()
+# It's difficult to tell if there's a difference...
+
 # Let's try plotting the distribution of the PiazzaPostsTotal column:
 ggplot(grades, aes(x=PiazzaPostTotal)) + geom_histogram()
-# This plot is very right-skewed and not very informative.
-# We can transform it with the log function:
+# It's very "right-skewed", with lots of 0s and some really large values
+# We can transform it with the log function to make it more even:
 grades$logPiazza <- log(grades$PiazzaPostTotal + 1) # Add 1 because log(0) isn't defined
 ggplot(grades, aes(x=logPiazza)) + geom_histogram()
-# Now let's compare the high- and low-performaning students' Piazza activity:
+
+# Now let's compare the high- and low-performaning students' log Piazza activity:
 ggplot(grades, aes(x=goodGrade, y=logPiazza)) + geom_boxplot()
-# Was there a difference?
+# The difference is much easier to spot
 
 ### CHALLENGE: Complete the code below so that the "finalPerformance" column is either
 ###            "Poor" (final grade < 60), "OK" (between 60-85) or "Great" (over 85).
 ###            Then create a boxplot to compare the HW1 scores of the three groups.
 
-grades$finalPerformance <- NA
+grades$finalPerformance <- ordered("", c("Poor", "OK", "Great"))
 grades[grades$Grade_Final < 60,]$finalPerformance <- "Poor"
 grades["EDIT ME",]$finalPerformance <- "OK"
 grades["EDIT ME",]$finalPerformance <- "Great"
 table(grades$finalPerformance)
 # Now plot students'H1W scores, split by finalPerformance
-
+# ggplot(...) + ...
 
 
 
@@ -333,6 +371,7 @@ median(noHints$Grade_Final)
 
 
 # But to really know, we need to do a stistical test.
+# Queue slides on statistical testing!
 
 # Here's a t-test, which most people will use
 # It tests the null hypothesis: the means of the two populations are the same
@@ -401,7 +440,7 @@ wilcox.test(haveHints$Grade_Test2, noHints$Grade_Test2)
 # https://xkcd.com/882/
 
 # Still, there are other ways of looking at the question:
-# Remember out table:
+# Remember our table:
 table(grades$goodGrade, grades$hints)
 
 # We can also test to see if the ratio of good/bad grades is
