@@ -103,7 +103,6 @@ c(1:3, 8, 9, 1:6)
 
 
 
-
 ## 3. Subsetting data ##
 
 # You can subset a vector with brackets []:
@@ -198,6 +197,11 @@ table(round(grades$Grade_H1))
 ### HINT: Remember that the "&" and "|" operators apply AND and OR over boolean vectors
 
 
+
+
+##########
+# Break! #
+##########
 
 
 
@@ -477,7 +481,7 @@ fisher.test(sample$goodGrade, sample$hints)
 
 
 
-## 7. Modeling data (if there permits) ##
+## 7. Modeling data (if time permits) ##
 
 # Install some additional packages
 pacman::p_load(Hmisc, corrplot, DAAG)
